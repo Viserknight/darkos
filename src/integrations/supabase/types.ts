@@ -14,7 +14,276 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_history: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      emergency_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          name: string
+          phone_number: string
+          relationship: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          phone_number: string
+          relationship?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          phone_number?: string
+          relationship?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      evidence_recordings: {
+        Row: {
+          created_at: string
+          file_url: string | null
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          recording_type: string
+          transcription: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          recording_type: string
+          transcription?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          recording_type?: string
+          transcription?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      health_metrics: {
+        Row: {
+          emotional_state: string | null
+          heart_rate: number | null
+          id: string
+          recorded_at: string
+          stress_level: number | null
+          user_id: string
+        }
+        Insert: {
+          emotional_state?: string | null
+          heart_rate?: number | null
+          id?: string
+          recorded_at?: string
+          stress_level?: number | null
+          user_id: string
+        }
+        Update: {
+          emotional_state?: string | null
+          heart_rate?: number | null
+          id?: string
+          recorded_at?: string
+          stress_level?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      safe_checkins: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          scheduled_time: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scheduled_time: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scheduled_time?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sos_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          resolved_at: string | null
+          status: string | null
+          trigger_method: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          resolved_at?: string | null
+          status?: string | null
+          trigger_method?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          resolved_at?: string | null
+          status?: string | null
+          trigger_method?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_notes: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          is_favorite: boolean | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          auto_record_on_stress: boolean | null
+          checkin_frequency_hours: number | null
+          created_at: string
+          id: string
+          sos_voice_keywords: string[] | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+          voice_activation_enabled: boolean | null
+        }
+        Insert: {
+          auto_record_on_stress?: boolean | null
+          checkin_frequency_hours?: number | null
+          created_at?: string
+          id?: string
+          sos_voice_keywords?: string[] | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+          voice_activation_enabled?: boolean | null
+        }
+        Update: {
+          auto_record_on_stress?: boolean | null
+          checkin_frequency_hours?: number | null
+          created_at?: string
+          id?: string
+          sos_voice_keywords?: string[] | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+          voice_activation_enabled?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
