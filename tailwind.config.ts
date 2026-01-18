@@ -64,6 +64,18 @@ export default {
         void: {
           black: "hsl(var(--void-black))",
         },
+        sos: {
+          DEFAULT: "hsl(var(--sos-red))",
+        },
+        safe: {
+          DEFAULT: "hsl(var(--safe-green))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning-amber))",
+        },
+        calm: {
+          DEFAULT: "hsl(var(--calm-blue))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
