@@ -8,19 +8,23 @@ import { HealthApp } from './apps/HealthApp';
 import { WatchNotesApp } from './apps/WatchNotesApp';
 import { WatchAIApp } from './apps/WatchAIApp';
 import { SettingsWatchApp } from './apps/SettingsWatchApp';
+import { LocationApp } from './apps/LocationApp';
+import { EmergencyCallApp } from './apps/EmergencyCallApp';
 import { useVoiceActivation } from '@/hooks/useVoiceActivation';
 import { useAuth } from '@/hooks/useAuth';
-import { Clock, Shield, Video, Users, Heart, FileText, Bot, Settings, ChevronLeft } from 'lucide-react';
+import { Clock, Shield, Video, Users, Heart, FileText, Bot, Settings, ChevronLeft, MapPin, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-type AppType = 'home' | 'checkin' | 'evidence' | 'contacts' | 'health' | 'notes' | 'ai' | 'settings';
+type AppType = 'home' | 'checkin' | 'evidence' | 'contacts' | 'health' | 'notes' | 'ai' | 'settings' | 'location' | 'emergency';
 
 const apps = [
   { id: 'checkin' as AppType, name: 'Check-in', icon: Clock, color: 'text-primary' },
   { id: 'evidence' as AppType, name: 'Evidence', icon: Video, color: 'text-secondary' },
   { id: 'contacts' as AppType, name: 'Contacts', icon: Users, color: 'text-accent' },
   { id: 'health' as AppType, name: 'Health', icon: Heart, color: 'text-sos' },
+  { id: 'location' as AppType, name: 'Location', icon: MapPin, color: 'text-safe' },
+  { id: 'emergency' as AppType, name: 'Call', icon: Phone, color: 'text-sos' },
   { id: 'notes' as AppType, name: 'Notes', icon: FileText, color: 'text-warning' },
   { id: 'ai' as AppType, name: 'Nova AI', icon: Bot, color: 'text-calm' },
   { id: 'settings' as AppType, name: 'Settings', icon: Settings, color: 'text-muted-foreground' },
@@ -66,6 +70,8 @@ export function WatchContainer() {
       case 'evidence': return <EvidenceApp />;
       case 'contacts': return <ContactsApp />;
       case 'health': return <HealthApp />;
+      case 'location': return <LocationApp />;
+      case 'emergency': return <EmergencyCallApp />;
       case 'notes': return <WatchNotesApp />;
       case 'ai': return <WatchAIApp />;
       case 'settings': return <SettingsWatchApp />;

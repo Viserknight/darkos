@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import '@/types/speech-recognition.d.ts';
 
 interface VoiceActivationOptions {
   keywords: string[];
@@ -6,6 +7,14 @@ interface VoiceActivationOptions {
   onCancelDetected: () => void;
   enabled: boolean;
 }
+
+// Get the SpeechRecognition constructor
+const getSpeechRecognition = (): (new () => SpeechRecognition) | null => {
+  if (typeof window !== 'undefined') {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+  return null;
+};
 
 export function useVoiceActivation({
   keywords,
@@ -20,7 +29,7 @@ export function useVoiceActivation({
   const sosActivatedRef = useRef(false);
 
   useEffect(() => {
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognitionAPI = getSpeechRecognition();
     setIsSupported(!!SpeechRecognitionAPI);
 
     if (SpeechRecognitionAPI && enabled) {

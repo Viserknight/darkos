@@ -128,6 +128,48 @@ export type Database = {
         }
         Relationships: []
       }
+      location_history: {
+        Row: {
+          accuracy: number | null
+          altitude: number | null
+          heading: number | null
+          id: string
+          is_shared: boolean | null
+          latitude: number
+          longitude: number
+          recorded_at: string
+          shared_with: string[] | null
+          speed: number | null
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          altitude?: number | null
+          heading?: number | null
+          id?: string
+          is_shared?: boolean | null
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          shared_with?: string[] | null
+          speed?: number | null
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          altitude?: number | null
+          heading?: number | null
+          id?: string
+          is_shared?: boolean | null
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          shared_with?: string[] | null
+          speed?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
