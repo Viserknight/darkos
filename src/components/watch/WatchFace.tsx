@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Heart, Shield, Mic, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Heart, Shield, Mic, AlertTriangle, CheckCircle2, Clock, Vibrate } from 'lucide-react';
 import { useHealthMetrics, EmotionalState } from '@/hooks/useHealthMetrics';
+import { useAutoCheckIn } from '@/hooks/useAutoCheckIn';
 import { cn } from '@/lib/utils';
 
 interface WatchFaceProps {
   onSwipe: (direction: 'up' | 'down' | 'left' | 'right') => void;
   isListening: boolean;
   sosActive: boolean;
+  shakeEnabled?: boolean;
+  patternProgress?: number;
+  patternLength?: number;
 }
 
 const emotionColors: Record<EmotionalState, string> = {
@@ -27,9 +31,10 @@ const emotionLabels: Record<EmotionalState, string> = {
   sad: 'Low'
 };
 
-export function WatchFace({ onSwipe, isListening, sosActive }: WatchFaceProps) {
+export function WatchFace({ onSwipe, isListening, sosActive, shakeEnabled, patternProgress = 0, patternLength = 4 }: WatchFaceProps) {
   const [time, setTime] = useState(new Date());
   const { metrics, isAnomalyDetected } = useHealthMetrics();
+  const { nextCheckIn, timeUntilNextFormatted, confirmCheckIn } = useAutoCheckIn();
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -93,11 +98,30 @@ export function WatchFace({ onSwipe, isListening, sosActive }: WatchFaceProps) {
           {isListening && (
             <div className="flex items-center gap-1 text-primary">
               <Mic className="w-3 h-3 animate-pulse" />
-              <span className="text-xs">Active</span>
+              <span className="text-xs">Voice</span>
+            </div>
+          )}
+          {shakeEnabled && (
+            <div className="flex items-center gap-1 text-secondary ml-1">
+              <Vibrate className="w-3 h-3" />
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
+          {/* Pattern progress indicator */}
+          {patternProgress > 0 && (
+            <div className="flex gap-0.5">
+              {Array.from({ length: patternLength }).map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full transition-colors",
+                    i < patternProgress ? "bg-warning" : "bg-muted"
+                  )}
+                />
+              ))}
+            </div>
+          )}
           {isAnomalyDetected ? (
             <AlertTriangle className="w-4 h-4 text-warning animate-pulse" />
           ) : (
@@ -169,10 +193,21 @@ export function WatchFace({ onSwipe, isListening, sosActive }: WatchFaceProps) {
         {emotionLabels[metrics.emotionalState]}
       </div>
 
+      {/* Next Check-in Indicator */}
+      {nextCheckIn && timeUntilNextFormatted && (
+        <button
+          onClick={() => confirmCheckIn(nextCheckIn.id)}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 bg-primary/20 rounded-full hover:bg-primary/30 transition-colors"
+        >
+          <Clock className="w-3 h-3 text-primary" />
+          <span className="text-xs text-primary font-medium">{timeUntilNextFormatted}</span>
+        </button>
+      )}
+
       {/* Swipe hints */}
       <div className="absolute bottom-4 left-0 right-0 text-center">
         <span className="text-xs text-muted-foreground/50">
-          Swipe for apps
+          Swipe ↑ for apps
         </span>
       </div>
     </div>
