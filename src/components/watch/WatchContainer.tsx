@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { WatchFace } from './WatchFace';
 import { SOSButton } from './SOSButton';
 import { CheckInApp } from './apps/CheckInApp';
@@ -11,8 +11,9 @@ import { SettingsWatchApp } from './apps/SettingsWatchApp';
 import { LocationApp } from './apps/LocationApp';
 import { EmergencyCallApp } from './apps/EmergencyCallApp';
 import { useVoiceActivation } from '@/hooks/useVoiceActivation';
+import { useShakeDetection, usePanicGesture } from '@/hooks/usePanicGesture';
 import { useAuth } from '@/hooks/useAuth';
-import { Clock, Shield, Video, Users, Heart, FileText, Bot, Settings, ChevronLeft, MapPin, Phone } from 'lucide-react';
+import { Clock, Shield, Video, Users, Heart, FileText, Bot, Settings, ChevronLeft, MapPin, Phone, Vibrate } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -36,9 +37,12 @@ export function WatchContainer() {
   const [sosActive, setSosActive] = useState(false);
   const [sosTriggerMethod, setSosTriggerMethod] = useState<'button' | 'voice' | 'gesture'>('button');
   const [showAppGrid, setShowAppGrid] = useState(false);
+  const [shakeEnabled, setShakeEnabled] = useState(true);
+  const [gestureEnabled, setGestureEnabled] = useState(true);
 
+  // Voice activation
   const handleKeywordDetected = useCallback((keyword: string) => {
-    toast.warning(`Voice trigger detected: "${keyword}"`, { duration: 2000 });
+    toast.warning(`Voice trigger: "${keyword}"`, { duration: 2000 });
     setSosTriggerMethod('voice');
     setSosActive(true);
   }, []);
@@ -48,14 +52,53 @@ export function WatchContainer() {
     toast.success('Alert cancelled by voice');
   }, []);
 
-  const { isListening, startListening, stopListening, isSupported } = useVoiceActivation({
+  const { isListening, startListening, stopListening, isSupported: voiceSupported } = useVoiceActivation({
     keywords: ['help', 'stop'],
     onKeywordDetected: handleKeywordDetected,
     onCancelDetected: handleCancelDetected,
     enabled: true
   });
 
+  // Shake detection
+  const handleShakeDetected = useCallback(() => {
+    toast.warning('🔔 Shake detected! Activating SOS...', { duration: 2000 });
+    setSosTriggerMethod('gesture');
+    setSosActive(true);
+  }, []);
+
+  const { isSupported: shakeSupported, isActive: shakeActive } = useShakeDetection({
+    threshold: 20,
+    shakeCount: 4,
+    timeout: 1500,
+    onShakeDetected: handleShakeDetected,
+    enabled: shakeEnabled && !sosActive
+  });
+
+  // Panic gesture (swipe pattern: left-right-left-right)
+  const handlePanicGestureDetected = useCallback(() => {
+    toast.warning('🚨 Panic gesture detected!', { duration: 2000 });
+    setSosTriggerMethod('gesture');
+    setSosActive(true);
+  }, []);
+
+  const { recordSwipe, patternProgress, patternLength, resetPattern } = usePanicGesture({
+    panicPattern: ['left', 'right', 'left', 'right'],
+    patternTimeout: 3000,
+    onPanicGestureDetected: handlePanicGestureDetected,
+    enabled: gestureEnabled && !sosActive && currentApp === 'home' && !showAppGrid
+  });
+
+  // Reset pattern when SOS is cancelled
+  useEffect(() => {
+    if (!sosActive) {
+      resetPattern();
+    }
+  }, [sosActive, resetPattern]);
+
   const handleSwipe = (direction: 'up' | 'down' | 'left' | 'right') => {
+    // Record swipe for panic pattern
+    recordSwipe(direction);
+
     if (direction === 'up') {
       setShowAppGrid(true);
     } else if (direction === 'down') {
@@ -115,6 +158,9 @@ export function WatchContainer() {
               onSwipe={handleSwipe}
               isListening={isListening}
               sosActive={sosActive}
+              shakeEnabled={shakeEnabled && shakeSupported}
+              patternProgress={patternProgress}
+              patternLength={patternLength}
             />
           )
         ) : (
@@ -144,7 +190,7 @@ export function WatchContainer() {
       )}
 
       {/* Voice activation toggle */}
-      {isSupported && currentApp === 'home' && !showAppGrid && (
+      {voiceSupported && currentApp === 'home' && !showAppGrid && (
         <button
           onClick={isListening ? stopListening : startListening}
           className={cn(
@@ -153,6 +199,19 @@ export function WatchContainer() {
           )}
         >
           <Shield className="w-4 h-4" />
+        </button>
+      )}
+
+      {/* Shake detection indicator */}
+      {shakeSupported && shakeEnabled && currentApp === 'home' && !showAppGrid && (
+        <button
+          onClick={() => setShakeEnabled(!shakeEnabled)}
+          className={cn(
+            "absolute top-4 left-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+            shakeActive ? "bg-secondary/20 text-secondary" : "bg-muted text-muted-foreground"
+          )}
+        >
+          <Vibrate className="w-4 h-4" />
         </button>
       )}
     </div>
