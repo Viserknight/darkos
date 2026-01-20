@@ -10,14 +10,17 @@ import { WatchAIApp } from './apps/WatchAIApp';
 import { SettingsWatchApp } from './apps/SettingsWatchApp';
 import { LocationApp } from './apps/LocationApp';
 import { EmergencyCallApp } from './apps/EmergencyCallApp';
+import { CalculatorApp } from './apps/CalculatorApp';
+import { ClockDisguiseApp } from './apps/ClockDisguiseApp';
 import { useVoiceActivation } from '@/hooks/useVoiceActivation';
 import { useShakeDetection, usePanicGesture } from '@/hooks/usePanicGesture';
+import { useDiscreetMode } from '@/hooks/useDiscreetMode';
 import { useAuth } from '@/hooks/useAuth';
-import { Clock, Shield, Video, Users, Heart, FileText, Bot, Settings, ChevronLeft, MapPin, Phone, Vibrate } from 'lucide-react';
+import { Clock, Shield, Video, Users, Heart, FileText, Bot, Settings, ChevronLeft, MapPin, Phone, Vibrate, Calculator, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-type AppType = 'home' | 'checkin' | 'evidence' | 'contacts' | 'health' | 'notes' | 'ai' | 'settings' | 'location' | 'emergency';
+type AppType = 'home' | 'checkin' | 'evidence' | 'contacts' | 'health' | 'notes' | 'ai' | 'settings' | 'location' | 'emergency' | 'calculator';
 
 const apps = [
   { id: 'checkin' as AppType, name: 'Check-in', icon: Clock, color: 'text-primary' },
@@ -26,6 +29,7 @@ const apps = [
   { id: 'health' as AppType, name: 'Health', icon: Heart, color: 'text-sos' },
   { id: 'location' as AppType, name: 'Location', icon: MapPin, color: 'text-safe' },
   { id: 'emergency' as AppType, name: 'Call', icon: Phone, color: 'text-sos' },
+  { id: 'calculator' as AppType, name: 'Calculator', icon: Calculator, color: 'text-calm' },
   { id: 'notes' as AppType, name: 'Notes', icon: FileText, color: 'text-warning' },
   { id: 'ai' as AppType, name: 'Nova AI', icon: Bot, color: 'text-calm' },
   { id: 'settings' as AppType, name: 'Settings', icon: Settings, color: 'text-muted-foreground' },
@@ -39,6 +43,14 @@ export function WatchContainer() {
   const [showAppGrid, setShowAppGrid] = useState(false);
   const [shakeEnabled, setShakeEnabled] = useState(true);
   const [gestureEnabled, setGestureEnabled] = useState(true);
+
+  // Discreet mode
+  const { 
+    isDiscreetMode, 
+    disguiseType, 
+    secretCode,
+    disableDiscreetMode 
+  } = useDiscreetMode();
 
   // Voice activation
   const handleKeywordDetected = useCallback((keyword: string) => {
@@ -56,10 +68,10 @@ export function WatchContainer() {
     keywords: ['help', 'stop'],
     onKeywordDetected: handleKeywordDetected,
     onCancelDetected: handleCancelDetected,
-    enabled: true
+    enabled: true // Keep voice active even in discreet mode
   });
 
-  // Shake detection
+  // Shake detection - always active even in discreet mode
   const handleShakeDetected = useCallback(() => {
     toast.warning('🔔 Shake detected! Activating SOS...', { duration: 2000 });
     setSosTriggerMethod('gesture');
@@ -85,7 +97,7 @@ export function WatchContainer() {
     panicPattern: ['left', 'right', 'left', 'right'],
     patternTimeout: 3000,
     onPanicGestureDetected: handlePanicGestureDetected,
-    enabled: gestureEnabled && !sosActive && currentApp === 'home' && !showAppGrid
+    enabled: gestureEnabled && !sosActive && currentApp === 'home' && !showAppGrid && !isDiscreetMode
   });
 
   // Reset pattern when SOS is cancelled
@@ -94,6 +106,12 @@ export function WatchContainer() {
       resetPattern();
     }
   }, [sosActive, resetPattern]);
+
+  // Handle secret code entered in disguise apps
+  const handleSecretCodeEntered = useCallback(() => {
+    disableDiscreetMode();
+    toast.success('Discreet mode disabled', { duration: 1500 });
+  }, [disableDiscreetMode]);
 
   const handleSwipe = (direction: 'up' | 'down' | 'left' | 'right') => {
     // Record swipe for panic pattern
@@ -115,12 +133,45 @@ export function WatchContainer() {
       case 'health': return <HealthApp />;
       case 'location': return <LocationApp />;
       case 'emergency': return <EmergencyCallApp />;
+      case 'calculator': return <CalculatorApp />;
       case 'notes': return <WatchNotesApp />;
       case 'ai': return <WatchAIApp />;
       case 'settings': return <SettingsWatchApp />;
       default: return null;
     }
   };
+
+  // Render disguise mode
+  if (isDiscreetMode) {
+    return (
+      <div className="relative w-[320px] h-[320px] watch-bezel watch-face mx-auto">
+        <div className="absolute inset-2 rounded-full overflow-hidden bg-background">
+          {disguiseType === 'calculator' ? (
+            <CalculatorApp 
+              isDisguise 
+              secretCode={secretCode}
+              onSecretCodeEntered={handleSecretCodeEntered}
+            />
+          ) : (
+            <ClockDisguiseApp 
+              secretCode={secretCode}
+              onSecretCodeEntered={handleSecretCodeEntered}
+            />
+          )}
+        </div>
+        
+        {/* Hidden SOS still accessible via shake/voice */}
+        {sosActive && (
+          <SOSButton
+            isActive={sosActive}
+            onActivate={() => {}}
+            onCancel={() => setSosActive(false)}
+            triggerMethod={sosTriggerMethod}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-[320px] h-[320px] watch-bezel watch-face mx-auto">
@@ -135,7 +186,7 @@ export function WatchContainer() {
               >
                 <ChevronLeft className="w-3 h-3" /> Watch Face
               </button>
-              <div className="grid grid-cols-3 gap-3 flex-1 content-start">
+              <div className="grid grid-cols-3 gap-3 flex-1 content-start overflow-y-auto">
                 {apps.map(app => (
                   <button
                     key={app.id}
